@@ -27,6 +27,11 @@ jobs:
       run: |
         playwright install chromium
 
+    - name: Set PLAYWRIGHT_BROWSERS_PATH
+      run: |
+        echo "PLAYWRIGHT_BROWSERS_PATH=$env:LOCALAPPDATA\ms-playwright" >> $env:GITHUB_ENV
+      shell: pwsh
+
     - name: Build EXE with PyInstaller
       run: |
         pyinstaller --onefile `
@@ -34,8 +39,11 @@ jobs:
           --collect-all playwright `
           --hidden-import playwright `
           --hidden-import playwright.sync_api `
-          --add-data "$env:LOCALAPPDATA\ms-playwright;ms-playwright" `
+          --add-data "$env:LOCALAPPDATA\ms-playwright;playwright_browsers" `
+          --runtime-hook=rthook.py `
           portal_downloader.py
+      env:
+        PLAYWRIGHT_BROWSERS_PATH: 0
 
     - name: Upload EXE as Artifact
       uses: actions/upload-artifact@v4
